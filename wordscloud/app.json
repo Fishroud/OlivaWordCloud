@@ -1,0 +1,13 @@
+{
+    "name" : "wordcloud词云",
+    "namespace" : "wordscloud",
+    "priority" : 10000,
+    "message_mode" : "olivos_string",
+    "support" : [
+        {
+            "sdk" : "all",
+            "platform" : "all",
+            "model" : "all"
+        }
+    ]
+}

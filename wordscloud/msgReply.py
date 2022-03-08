@@ -1,4 +1,15 @@
-from urllib import response
+'''
+ __     __     ______     ______     _____     ______     __         ______     __  __     _____    
+/\ \  _ \ \   /\  __ \   /\  == \   /\  __-.  /\  ___\   /\ \       /\  __ \   /\ \/\ \   /\  __-.  
+\ \ \/ ".\ \  \ \ \/\ \  \ \  __<   \ \ \/\ \ \ \ \____  \ \ \____  \ \ \/\ \  \ \ \_\ \  \ \ \/\ \ 
+ \ \__/".~\_\  \ \_____\  \ \_\ \_\  \ \____-  \ \_____\  \ \_____\  \ \_____\  \ \_____\  \ \____- 
+  \/_/   \/_/   \/_____/   \/_/ /_/   \/____/   \/_____/   \/_____/   \/_____/   \/_____/   \/____/ 
+@File      :   msgReply.py
+@Author    :   Fishroud鱼仙
+@Contact   :   fishroud@qq.com
+@Desc      :   None
+'''
+
 import wordscloud
 import wordcloud
 import pathlib
@@ -75,11 +86,13 @@ def unity_init(plugin_event, Proc):
         key = 'stop_uid_' + platform
         #try:
         glb_var[key] = [line.strip() for line in open(stop_uid_file_path_this, 'r+', encoding='utf-8').readlines()]
-        tmp_log_str = '已加载{}屏蔽名单{}条'.format(platform,len(glb_var[key]))
-        logProc(Proc, 2, tmp_log_str, [
-            ('wordcloud', 'default'),
-            ('Init', 'default')
-        ])
+        uid_num = len(glb_var[key])
+        if uid_num > 0:
+            tmp_log_str = '已加载{}屏蔽名单{}条'.format(platform,uid_num)
+            logProc(Proc, 2, tmp_log_str, [
+                ('wordcloud', 'default'),
+                ('Init', 'default')
+            ])
 
 
 def unity_reply(plugin_event, Proc):
@@ -89,13 +102,19 @@ def unity_reply(plugin_event, Proc):
     command_list = deleteBlank(message)
     if len(command_list) == 1:
         if command_list[0] == 'wordcloud':
-            unity_save(plugin_event, Proc)
+            #unity_save(plugin_event, Proc)
             if plugin_event.data.host_id:
                 region = str(plugin_event.data.host_id)
             else:
                 region = str(plugin_event.data.group_id)
             key = 'wordcloud_' + plugin_event.platform['platform'] + '_' + region
             save_path_this = "./plugin/data/wordcloud/" + plugin_event.platform['platform'] + "/" + key + ".txt"
+            save_key = 'wordcloud_' + plugin_event.platform['platform']
+            if glb_var[key]:
+                with open(save_path_this, "a+" ,encoding='utf-8') as f:
+                    f.write(glb_var[key])
+                glb_var[save_key].remove(region)
+                del glb_var[key]
             if not pathlib.Path(save_path_this).exists():
                 response = '该群未有词云记录'
                 plugin_event.reply(response)
@@ -130,7 +149,7 @@ def unity_reply(plugin_event, Proc):
         tmp_log_str = '收到来自用户{}的消息，但已被过滤'.format(uid)
         logProc(Proc, 2, tmp_log_str, [
             ('wordcloud', 'default'),
-            ('Init', 'default')
+            ('Info', 'default')
         ])
         return
     message = re.sub(u"\\(.*?\\)|\\{.*?}|\\[.*?]", "", message)
@@ -163,7 +182,7 @@ def unity_save(plugin_event, Proc):
     platforms = ['qq','kaiheila','qqGuild','telegram','dodo','fanbook']
     for platform in platforms:
         save_key = 'wordcloud_' + platform
-        if save_key in glb_var.keys():
+        if save_key in glb_var.keys() and len(glb_var[save_key]) > 0:
             for save_this in glb_var[save_key]:
                 key = save_key + "_" + save_this
                 save_path_this = "./plugin/data/wordcloud/" + platform + "/"

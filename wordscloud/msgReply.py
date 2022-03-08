@@ -11,6 +11,7 @@ import re
 save_path = "./plugin/data/wordcloud/"
 save_image_path = "./plugin/data/wordcloud/image/"
 stop_word_path = "./plugin/data/wordcloud/stop_word.txt"
+stop_uid_path = "./plugin/data/wordcloud/stop_uid/"
 
 def logProc(Proc, level, message, segment):
     Proc.log(
@@ -27,6 +28,7 @@ def unity_init(plugin_event, Proc):
     #初始化词云插件
     #初始化保存路径
     global stopwords
+    glb_var = globals()
     if not pathlib.Path(save_path).exists():
         tmp_log_str = '正在初始化保存文件路径'
         logProc(Proc, 2, tmp_log_str, [
@@ -61,9 +63,28 @@ def unity_init(plugin_event, Proc):
         ('wordcloud', 'default'),
         ('Init', 'default')
     ])
+    #初始化过滤名单
+    platforms = ['qq','kaiheila','qqGuild','telegram','dodo','fanbook']
+    if not pathlib.Path(stop_uid_path).exists():
+            os.mkdir(stop_uid_path)
+    for platform in platforms:
+        stop_uid_path_this = stop_uid_path + platform + '/'
+        if not pathlib.Path(stop_uid_path_this).exists():
+            os.mkdir(stop_uid_path_this)
+        stop_uid_file_path_this = stop_uid_path_this + 'stop.txt'
+        key = 'stop_uid_' + platform
+        #try:
+        glb_var[key] = [line.strip() for line in open(stop_uid_file_path_this, 'r+', encoding='utf-8').readlines()]
+        tmp_log_str = '已加载{}屏蔽名单{}条'.format(platform,len(glb_var[key]))
+        logProc(Proc, 2, tmp_log_str, [
+            ('wordcloud', 'default'),
+            ('Init', 'default')
+        ])
+
 
 def unity_reply(plugin_event, Proc):
     global stopwords
+    glb_var = globals()
     message = plugin_event.data.message
     command_list = deleteBlank(message)
     if len(command_list) == 1:
@@ -102,6 +123,16 @@ def unity_reply(plugin_event, Proc):
         elif command_list[0].lower() == 'reload' and command_list[1].lower() == 'save':
             unity_save(plugin_event, Proc)
             return
+    stop_uid_list = glb_var['stop_uid_' + plugin_event.platform['platform']]
+    #过滤屏蔽用户
+    uid = plugin_event.data.user_id
+    if str(uid) in stop_uid_list:
+        tmp_log_str = '收到来自用户{}的消息，但已被过滤'.format(uid)
+        logProc(Proc, 2, tmp_log_str, [
+            ('wordcloud', 'default'),
+            ('Init', 'default')
+        ])
+        return
     message = re.sub(u"\\(.*?\\)|\\{.*?}|\\[.*?]", "", message)
     message = re.sub(r'(https|http)?:\/\/(\w|\.|\/|\?|\=|\&|\%)*\b', "", message)
     seg_list = jieba.analyse.extract_tags(message, topK=20)
@@ -124,11 +155,6 @@ def unity_reply(plugin_event, Proc):
     else:
         glb_var[save_key] = []
         glb_var[save_key].append(region)
-    tmp_log_str = '已将分词保存到全局变量{}下，由全局数组{}保存群号'.format(key,save_key)
-    logProc(Proc, 2, tmp_log_str, [
-        ('wordcloud', 'default'),
-        ('Info', 'default')
-    ])
 
 
 

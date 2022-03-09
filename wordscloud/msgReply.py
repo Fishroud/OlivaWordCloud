@@ -21,9 +21,9 @@ import re
 
 platforms = ['qq','kaiheila','qqGuild','telegram','dodo','fanbook']
 save_path = "./plugin/data/wordcloud/"
-save_image_path = "./plugin/data/wordcloud/image/"
-stop_word_path = "./plugin/data/wordcloud/stop_word.txt"
-stop_uid_path = "./plugin/data/wordcloud/stop_uid/"
+save_image_path = save_path + "image/"
+stop_word_path = save_path + "stop_word.txt"
+stop_uid_path = save_path + "stop_uid/"
 
 def logProc(Proc, level, message, segment):
     Proc.log(
@@ -127,7 +127,7 @@ def unity_reply(plugin_event, Proc):
             else:
                 region = str(plugin_event.data.group_id)
             key = 'wordcloud_' + plugin_event.platform['platform'] + '_' + region
-            save_path_this = "./plugin/data/wordcloud/" + plugin_event.platform['platform'] + "/" + key + ".txt"
+            save_path_this = save_path + plugin_event.platform['platform'] + "/" + key + ".txt"
             save_key = 'wordcloud_' + plugin_event.platform['platform']
             if key in glb_var.keys():
                 with open(save_path_this, "a+" ,encoding='utf-8') as f:
@@ -194,10 +194,10 @@ def unity_save(plugin_event, Proc):
         if save_key in glb_var.keys() and len(glb_var[save_key]) > 0:
             for save_this in glb_var[save_key]:
                 key = save_key + "_" + save_this
-                save_path_this = "./plugin/data/wordcloud/" + platform + "/"
+                save_path_this = save_path + platform + "/"
                 if not pathlib.Path(save_path_this).exists():
                     os.mkdir(save_path_this)
-                save_path_this = "./plugin/data/wordcloud/" + platform + "/" + key + ".txt"
+                save_path_this = save_path + platform + "/" + key + ".txt"
                 with open(save_path_this, "a+" ,encoding='utf-8') as f:
                     f.write(glb_var[key])
                 del glb_var[key]

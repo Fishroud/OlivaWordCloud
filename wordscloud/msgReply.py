@@ -19,6 +19,7 @@ import jieba.analyse
 import os
 import re
 
+platforms = ['qq','kaiheila','qqGuild','telegram','dodo','fanbook']
 save_path = "./plugin/data/wordcloud/"
 save_image_path = "./plugin/data/wordcloud/image/"
 stop_word_path = "./plugin/data/wordcloud/stop_word.txt"
@@ -41,12 +42,16 @@ def unity_init(plugin_event, Proc):
     global stopwords
     glb_var = globals()
     if not pathlib.Path(save_path).exists():
-        tmp_log_str = '正在初始化保存文件路径'
-        logProc(Proc, 2, tmp_log_str, [
-            ('wordcloud', 'default'),
-            ('Init', 'default')
-        ])
         os.mkdir(save_path)
+    for platform in platforms:
+        save_path_this = save_path + platform + '/'
+        if not pathlib.Path(save_path_this).exists():
+            os.mkdir(save_path_this)
+            tmp_log_str = '已初始化{}平台保存文件路径'.format(platform)
+            logProc(Proc, 2, tmp_log_str, [
+                ('wordcloud', 'default'),
+                ('Init', 'default')
+            ])
     if not pathlib.Path(save_image_path).exists():
         tmp_log_str = '正在初始化图片保存文件路径'
         logProc(Proc, 2, tmp_log_str, [
@@ -75,7 +80,6 @@ def unity_init(plugin_event, Proc):
         ('Init', 'default')
     ])
     #初始化过滤名单
-    platforms = ['qq','kaiheila','qqGuild','telegram','dodo','fanbook']
     if not pathlib.Path(stop_uid_path).exists():
             os.mkdir(stop_uid_path)
     for platform in platforms:
@@ -185,7 +189,6 @@ def unity_reply(plugin_event, Proc):
 
 def unity_save(plugin_event, Proc):
     glb_var = globals()
-    platforms = ['qq','kaiheila','qqGuild','telegram','dodo','fanbook']
     for platform in platforms:
         save_key = 'wordcloud_' + platform
         if save_key in glb_var.keys() and len(glb_var[save_key]) > 0:

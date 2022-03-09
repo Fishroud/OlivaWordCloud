@@ -100,8 +100,20 @@ def unity_reply(plugin_event, Proc):
     glb_var = globals()
     message = plugin_event.data.message
     command_list = deleteBlank(message)
+    stop_uid_list = glb_var['stop_uid_' + plugin_event.platform['platform']]
+    #过滤屏蔽用户
+    uid = plugin_event.data.user_id
+    if str(uid) in stop_uid_list:
+        tmp_log_str = '收到来自用户{}的消息，但已被过滤'.format(uid)
+        logProc(Proc, 2, tmp_log_str, [
+            ('wordcloud', 'default'),
+            ('Info', 'default')
+        ])
+        return
     if len(command_list) == 1:
-        if command_list[0] == 'wordcloud':
+        if command_list[0].lower() == 'wordcloud':
+            response = '正在尝试生成本群词云......'
+            plugin_event.reply(response)
             #unity_save(plugin_event, Proc)
             if plugin_event.data.host_id:
                 region = str(plugin_event.data.host_id)
@@ -122,11 +134,11 @@ def unity_reply(plugin_event, Proc):
                 with open(save_path_this, "r" ,encoding='utf-8') as f:  # 打开文件
                     words = f.read()
                 w = wordcloud.WordCloud(
-                    width=1000,
-                    height=700,
-                    background_color='white',
-                    collocations=False,
-                    font_path="msyh.ttc"
+                    width = 1000,
+                    height = 700,
+                    background_color = 'white',
+                    collocations = False,
+                    font_path = "msyh.ttc"
                     )
                 w.generate(words)
                 w.to_file(save_image_path + key + ".png")
@@ -143,16 +155,6 @@ def unity_reply(plugin_event, Proc):
         elif command_list[0].lower() == 'reload' and command_list[1].lower() == 'save':
             unity_save(plugin_event, Proc)
             return
-    stop_uid_list = glb_var['stop_uid_' + plugin_event.platform['platform']]
-    #过滤屏蔽用户
-    uid = plugin_event.data.user_id
-    if str(uid) in stop_uid_list:
-        tmp_log_str = '收到来自用户{}的消息，但已被过滤'.format(uid)
-        logProc(Proc, 2, tmp_log_str, [
-            ('wordcloud', 'default'),
-            ('Info', 'default')
-        ])
-        return
     message = re.sub(u"\\(.*?\\)|\\{.*?}|\\[.*?]", "", message)
     message = re.sub(r'(https|http)?:\/\/(\w|\.|\/|\?|\=|\&|\%)*\b', "", message)
     seg_list = jieba.analyse.extract_tags(message, topK=20)

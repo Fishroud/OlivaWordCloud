@@ -110,7 +110,7 @@ def unity_reply(plugin_event, Proc):
             key = 'wordcloud_' + plugin_event.platform['platform'] + '_' + region
             save_path_this = "./plugin/data/wordcloud/" + plugin_event.platform['platform'] + "/" + key + ".txt"
             save_key = 'wordcloud_' + plugin_event.platform['platform']
-            if glb_var[key]:
+            if key in glb_var.keys():
                 with open(save_path_this, "a+" ,encoding='utf-8') as f:
                     f.write(glb_var[key])
                 glb_var[save_key].remove(region)
@@ -125,6 +125,7 @@ def unity_reply(plugin_event, Proc):
                     width=1000,
                     height=700,
                     background_color='white',
+                    collocations=False,
                     font_path="msyh.ttc"
                     )
                 w.generate(words)

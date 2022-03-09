@@ -85,7 +85,10 @@ def unity_init(plugin_event, Proc):
         stop_uid_file_path_this = stop_uid_path_this + 'stop.txt'
         key = 'stop_uid_' + platform
         #try:
-        glb_var[key] = [line.strip() for line in open(stop_uid_file_path_this, 'r+', encoding='utf-8').readlines()]
+        if not pathlib.Path(stop_uid_file_path_this).exists():
+            f = open(stop_uid_file_path_this, 'w', encoding='utf-8')
+            f.close()
+        glb_var[key] = [line.strip() for line in open(stop_uid_file_path_this, 'r', encoding='utf-8').readlines()]
         uid_num = len(glb_var[key])
         if uid_num > 0:
             tmp_log_str = '已加载{}屏蔽名单{}条'.format(platform,uid_num)

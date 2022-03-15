@@ -168,7 +168,7 @@ def unity_reply(plugin_event, Proc):
 
 
 
-def unity_save(Proc):
+def unity_save(plugin_event, Proc):
     glb_var = globals()
     for platform in platforms:
         save_key = 'wordcloud_' + platform
